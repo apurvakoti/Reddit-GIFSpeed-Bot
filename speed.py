@@ -62,20 +62,22 @@ def upload_to_gfycat():
 def handle_comment(cmnt):
     text = cmnt.body.lower()
     link = cmnt.submission.url
-    if link.endswith('.gif') or link.endswith('.mp4'):
+    if link.endswith('.gif') or link.endswith('.mp4') or "gfycat.com" in link:
         print "Processing submission"
         link = link.replace('.gif', '.mp4')
+        if "gfycat.com" in link:
+            id = link.split('/')[-1]
+            link = "https://giant.gfycat.com/" + id + '.mp4'
         text = cmnt.body.lower()
         mult = float(text.split()[1])
         changespeed(link, mult)
         reply_url = upload_to_gfycat()
-        cmnt.reply("Here's the GIF at "+mult+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot))
+        cmnt.reply("Here's the GIF at "+mult+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot)")
         print "Comment should be up"
     
 
 def start_reddit():
     reddit = praw.Reddit('gifspeedbot')
-    subreddit = reddit.subreddit("bottesting")
     
     print "starting while"
     while(True):
@@ -85,6 +87,7 @@ def start_reddit():
                 try:
                     handle_comment(item)
                 except ValueError:
+                    print "value error"
                     pass #couldn't handle for some reason
                 reddit.inbox.mark_read([item])
 
