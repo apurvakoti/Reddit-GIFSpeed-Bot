@@ -1,0 +1,6 @@
+.vscode
+*.json
+*.ini
+*.mp4
+*.gif
+.log
