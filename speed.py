@@ -6,6 +6,7 @@ import praw
 from praw.models import Comment, Inbox
 import os
 import sys
+import urllib2
 
 
 CONFIG = json.loads(open('gfycat.json').read())
@@ -28,9 +29,17 @@ HEADER = get_access_token()
 
 def changespeed(vid, mult):
     print "Changing speed"
-    reader = imageio.get_reader(vid)
-    oldfps = reader.get_meta_data()['fps']
-    writer = imageio.get_writer('output.mp4', fps=(oldfps*mult))
+    if vid.endswith('.gifv'):
+        vid = vid.replace('.gifv', '.gif')
+        data = urllib2.urlopen(vid).read()
+        reader = imageio.get_reader(data, 'gif')
+    
+    if vid.endswith('.mp4'):
+        reader = imageio.get_reader(vid)
+        oldfps = float(reader.get_meta_data()['fps'])
+    else:
+        oldfps = float(reader.get_meta_data()['duration'])
+    writer = imageio.get_writer('output.mp4', fps=(oldfps*mult), macro_block_size=None, quality=8.0)
     for frame in reader:
         writer.append_data(frame)
     writer.close()
@@ -53,18 +62,25 @@ def upload_to_gfycat():
         status = requests.get('https://api.gfycat.com/v1/gfycats/fetch/status/' + gfykey)
         json_response = status.json()
 
+    print status.text  
+    if json_response["task"] == "complete":
+        try:
+            mp4link = json_response["mp4Url"]
+            return mp4link
+        except:
+            return 'https://giant.gfycat.com/' + json_response["gfyname"] + '.mp4'
         
-
-    mp4link = json_response["mp4Url"]
-    print "Finished upload"
-    return mp4link
+        finally:
+            print "Finished upload"
+        
+    else:
+        raise "failure"
 
 def handle_comment(cmnt):
     text = cmnt.body.lower()
     link = cmnt.submission.url
-    if link.endswith('.gif') or link.endswith('.mp4') or "gfycat.com" in link:
+    if link.endswith('.gif') or link.endswith('.mp4') or link.endswith('.gifv') or "gfycat.com" in link:
         print "Processing submission"
-        link = link.replace('.gif', '.mp4')
         if "gfycat.com" in link:
             id = link.split('/')[-1]
             link = "https://giant.gfycat.com/" + id + '.mp4'
