@@ -3,7 +3,7 @@ import requests
 import time
 import json
 import praw
-from praw.models import Comment, Inbox
+from praw.models import Comment, Inbox, Redditor
 import os
 import sys
 import urllib2
@@ -17,6 +17,8 @@ PAYLOAD = {
     "client_id": CLIENT_ID,
     "client_secret": CLIENT_SECRET
   }
+
+CMNT_TEXT = "^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)"
 
 
 def get_access_token():
@@ -80,16 +82,21 @@ def upload_to_gfycat():
 def handle_comment(cmnt):
     text = cmnt.body.lower()
     link = cmnt.submission.url
-    if link.endswith('.gif') or link.endswith('.mp4') or link.endswith('.gifv') or "gfycat.com" in link:
+    if text == "good bot":
+        if isinstance(cmnt.parent(), Comment) and cmnt.parent().author.name == "GIFSpeedBot":
+            print "complimented"
+            cmnt.reply("Thanks \n*****\n  " + CMNT_TEXT)
+            print "replied"
+    elif link.endswith('.gif') or link.endswith('.mp4') or link.endswith('.gifv') or "gfycat.com" in link:
         print "Processing submission"
         if "gfycat.com" in link:
-            id = link.split('/')[-1]
-            link = "https://giant.gfycat.com/" + id + '.mp4'
+            gid = link.split('/')[-1]
+            link = "https://giant.gfycat.com/" + gid + '.mp4'
         text = cmnt.body.lower()
         mult = float(text.split()[1])
         changespeed(link, mult)
         reply_url = upload_to_gfycat()
-        cmnt.reply("Here's the GIF at "+str(mult)+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)")
+        cmnt.reply("Here's the GIF at "+str(mult)+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n  \n*****\n  "+ CMNT_TEXT)
         print "Comment should be up"
     
 
@@ -107,6 +114,7 @@ def start_reddit():
                     print "value error"
                     pass #couldn't handle for some reason
                 reddit.inbox.mark_read([item])
+            
 
                 
 
