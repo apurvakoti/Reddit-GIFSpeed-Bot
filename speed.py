@@ -33,13 +33,14 @@ def changespeed(vid, mult):
         vid = vid.replace('.gifv', '.gif')
         data = urllib2.urlopen(vid).read()
         reader = imageio.get_reader(data, 'gif')
+        oldfps = float(reader.get_meta_data()['duration'])
     
-    if vid.endswith('.mp4'):
+    elif vid.endswith('.mp4'):
         reader = imageio.get_reader(vid)
         oldfps = float(reader.get_meta_data()['fps'])
-    else:
-        oldfps = float(reader.get_meta_data()['duration'])
-    writer = imageio.get_writer('output.mp4', fps=(oldfps*mult), macro_block_size=None, quality=8.0)
+        
+    writer = imageio.get_writer('output.mp4', fps=(oldfps*mult), quality=8.0)
+
     for frame in reader:
         writer.append_data(frame)
     writer.close()
@@ -66,12 +67,11 @@ def upload_to_gfycat():
     if json_response["task"] == "complete":
         try:
             mp4link = json_response["mp4Url"]
+            print "Finished upload"
             return mp4link
         except:
-            return 'https://giant.gfycat.com/' + json_response["gfyname"] + '.mp4'
-        
-        finally:
             print "Finished upload"
+            return 'https://giant.gfycat.com/' + json_response["gfyname"] + '.mp4'            
         
     else:
         raise "failure"
@@ -83,12 +83,12 @@ def handle_comment(cmnt):
         print "Processing submission"
         if "gfycat.com" in link:
             id = link.split('/')[-1]
-            link = "https://giant.gfycat.com/" + id + '.mp4'
+            link = "https://www.gfycat.com/" + id
         text = cmnt.body.lower()
         mult = float(text.split()[1])
         changespeed(link, mult)
         reply_url = upload_to_gfycat()
-        cmnt.reply("Here's the GIF at "+mult+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot)")
+        cmnt.reply("Here's the GIF at "+str(mult)+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)")
         print "Comment should be up"
     
 
