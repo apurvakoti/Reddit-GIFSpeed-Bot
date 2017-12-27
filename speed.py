@@ -71,7 +71,7 @@ def upload_to_gfycat():
             return mp4link
         except:
             print "Finished upload"
-            return 'https://giant.gfycat.com/' + json_response["gfyname"] + '.mp4'            
+            return 'https://thumbs.gfycat.com/' + json_response["gfyname"] + '-mobile.mp4'            
         
     else:
         raise "failure"
@@ -83,7 +83,7 @@ def handle_comment(cmnt):
         print "Processing submission"
         if "gfycat.com" in link:
             id = link.split('/')[-1]
-            link = "https://www.gfycat.com/" + id
+            link = "https://giant.gfycat.com/" + id + '.mp4'
         text = cmnt.body.lower()
         mult = float(text.split()[1])
         changespeed(link, mult)
