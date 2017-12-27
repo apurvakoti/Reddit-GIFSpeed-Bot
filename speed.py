@@ -18,7 +18,7 @@ PAYLOAD = {
     "client_secret": CLIENT_SECRET
   }
 
-CMNT_TEXT = "^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)"
+CMNT_TEXT = "  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)"
 
 
 def get_access_token():
@@ -82,11 +82,9 @@ def upload_to_gfycat():
 def handle_comment(cmnt):
     text = cmnt.body.lower()
     link = cmnt.submission.url
-    if text == "good bot":
-        if isinstance(cmnt.parent(), Comment) and cmnt.parent().author.name == "GIFSpeedBot":
-            print "complimented"
-            cmnt.reply("Thanks \n*****\n  " + CMNT_TEXT)
-            print "replied"
+    if text == "good bot": #don't need to check parent, etc - will only be in inbox if it was a reply
+        cmnt.reply("Thanks"+ CMNT_TEXT)
+       
     elif link.endswith('.gif') or link.endswith('.mp4') or link.endswith('.gifv') or "gfycat.com" in link:
         print "Processing submission"
         if "gfycat.com" in link:
@@ -96,7 +94,7 @@ def handle_comment(cmnt):
         mult = float(text.split()[1])
         changespeed(link, mult)
         reply_url = upload_to_gfycat()
-        cmnt.reply("Here's the GIF at "+str(mult)+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n  \n*****\n  "+ CMNT_TEXT)
+        cmnt.reply("Here's the GIF at "+str(mult)+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n"+ CMNT_TEXT)
         print "Comment should be up"
     
 
@@ -112,11 +110,7 @@ def start_reddit():
                     handle_comment(item)
                 except ValueError:
                     print "value error"
-                    pass #couldn't handle for some reason
-                reddit.inbox.mark_read([item])
-            
-
-                
-
+                    #couldn't handle for some reason
+                reddit.inbox.mark_read([item]) 
 
 start_reddit()
