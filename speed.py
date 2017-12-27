@@ -29,7 +29,7 @@ HEADER = get_access_token()
 
 def changespeed(vid, mult):
     print "Changing speed"
-    if vid.endswith('.gifv'):
+    if vid.endswith('.gifv') or vid.endswith('.gif'):
         vid = vid.replace('.gifv', '.gif')
         data = urllib2.urlopen(vid).read()
         reader = imageio.get_reader(data, 'gif')
@@ -67,7 +67,7 @@ def upload_to_gfycat():
     print status.text  
     if json_response["task"] == "complete":
         try:
-            mp4link = json_response["mp4Url"]
+            mp4link = json_response["mobileUrl"]
             print "Finished upload"
             return mp4link
         except:
@@ -111,4 +111,4 @@ def start_reddit():
                 
 
 
-#start_reddit()
+start_reddit()
