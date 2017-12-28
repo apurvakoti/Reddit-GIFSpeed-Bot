@@ -35,7 +35,8 @@ def changespeed(vid, mult):
         vid = vid.replace('.gifv', '.gif')
         data = urllib2.urlopen(vid).read()
         reader = imageio.get_reader(data, 'gif')
-        oldfps = 1000.0 / (float(reader.get_meta_data()['duration']))
+        dur = (float(reader.get_meta_data()['duration']))
+        oldfps = 1000.0 / (10 if dur == 0 else dur)
         print "old fps was " + (str(oldfps))
     
     elif vid.endswith('.mp4'):
