@@ -7,6 +7,7 @@ from praw.models import Comment, Inbox, Redditor
 import os
 import sys
 import urllib2
+import images
 
 
 CONFIG = json.loads(open('gfycat.json').read())
@@ -20,7 +21,7 @@ PAYLOAD = {
 
 CMNT_TEXT = "  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)"
 
-
+#Sets up the access token for gfycat
 def get_access_token():
     r = requests.get('https://api.gfycat.com/v1/oauth/token', params=PAYLOAD)
     access_token = r.json()["access_token"]
@@ -31,24 +32,28 @@ HEADER = get_access_token()
 
 def changespeed(vid, mult):
     print "Changing speed"
+    
     if vid.endswith('.gifv') or vid.endswith('.gif'):
         vid = vid.replace('.gifv', '.gif')
-        data = urllib2.urlopen(vid).read()
-        reader = imageio.get_reader(data, 'gif')
+        #data = urllib2.urlopen(vid).read()
+        reader = imageio.get_reader(vid, 'gif')
         dur = (float(reader.get_meta_data()['duration']))
         oldfps = 1000.0 / (10 if dur == 0 else dur)
         print "old fps was " + (str(oldfps))
+
+        frames = analyze.processImage(vid)
     
     elif vid.endswith('.mp4'):
-        reader = imageio.get_reader(vid)
+        frames = list(imageio.get_reader(vid))
         oldfps = float(reader.get_meta_data()['fps'])
         
     writer = imageio.get_writer('output.mp4', fps=(oldfps*mult), quality=8.0)
 
-    for frame in reader:
-        writer.append_data(frame)
-    writer.close()
-    print "Done changing speed"
+    if (frames != None):
+        for frame in frames:
+            writer.append_data(frame)
+        writer.close()
+        print "Done changing speed"
 
 def upload_to_gfycat():
     print "Starting upload"
@@ -114,4 +119,4 @@ def start_reddit():
                     #couldn't handle for some reason
                 reddit.inbox.mark_read([item]) 
 
-start_reddit()
+#start_reddit()
