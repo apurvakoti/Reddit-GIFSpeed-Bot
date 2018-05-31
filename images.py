@@ -6,6 +6,7 @@ https://gist.github.com/BigglesZX/4016539'''
 
 import os
 from PIL import Image
+import numpy as np
 
 def analyseImage(path):
     '''
@@ -73,11 +74,11 @@ def processImage(path):
                
             imglist.append(new_frame)
 
-            new_frame.save('%s-%d.png' % (''.join(os.path.basename(path).split('.')[:-1]), i), 'PNG')
+            #new_frame.save('%s-%d.png' % (''.join(os.path.basename(path).split('.')[:-1]), i), 'PNG')
 
             i += 1
             last_frame = new_frame
             im.seek(im.tell() + 1)
         return imglist
     except EOFError:
-        pass
+        return imglist

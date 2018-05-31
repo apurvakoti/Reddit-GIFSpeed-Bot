@@ -7,7 +7,9 @@ from praw.models import Comment, Inbox, Redditor
 import os
 import sys
 import urllib2
+import urllib
 import images
+import numpy as np
 
 
 CONFIG = json.loads(open('gfycat.json').read())
@@ -22,26 +24,27 @@ PAYLOAD = {
 CMNT_TEXT = "  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)"
 
 #Sets up the access token for gfycat
-def get_access_token():
+'''def get_access_token():
     r = requests.get('https://api.gfycat.com/v1/oauth/token', params=PAYLOAD)
     access_token = r.json()["access_token"]
     return {'Authorization' : 'Bearer ' + access_token}
 
-HEADER = get_access_token()
+HEADER = get_access_token()'''
 
 
 def changespeed(vid, mult):
     print "Changing speed"
     
     if vid.endswith('.gifv') or vid.endswith('.gif'):
-        vid = vid.replace('.gifv', '.gif')
-        #data = urllib2.urlopen(vid).read()
-        reader = imageio.get_reader(vid, 'gif')
+        vid = vid.replace('.gifv', '.gif') #make sure it's a gif
+        urllib.URLopener().retrieve(vid, 'input.gif')
+
+        reader = imageio.get_reader('input.gif', 'gif')
         dur = (float(reader.get_meta_data()['duration']))
-        oldfps = 1000.0 / (10 if dur == 0 else dur)
+        oldfps = 100.0 / (10 if dur == 0 else dur)
         print "old fps was " + (str(oldfps))
 
-        frames = analyze.processImage(vid)
+        frames = images.processImage('input.gif')
     
     elif vid.endswith('.mp4'):
         frames = list(imageio.get_reader(vid))
@@ -51,7 +54,7 @@ def changespeed(vid, mult):
 
     if (frames != None):
         for frame in frames:
-            writer.append_data(frame)
+            writer.append_data(np.array(frame))
         writer.close()
         print "Done changing speed"
 
