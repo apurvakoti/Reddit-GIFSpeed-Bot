@@ -19,17 +19,19 @@ PAYLOAD = {
     "grant_type":"client_credentials",
     "client_id": CLIENT_ID,
     "client_secret": CLIENT_SECRET
+
   }
 
 CMNT_TEXT = "  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)"
 
 #Sets up the access token for gfycat
-'''def get_access_token():
-    r = requests.get('https://api.gfycat.com/v1/oauth/token', params=PAYLOAD)
+def get_access_token():
+    r = requests.post('https://api.gfycat.com/v1/oauth/token', json=PAYLOAD)
+    print r.json()
     access_token = r.json()["access_token"]
     return {'Authorization' : 'Bearer ' + access_token}
 
-HEADER = get_access_token()'''
+HEADER = get_access_token()
 
 
 def changespeed(vid, mult):
@@ -122,4 +124,4 @@ def start_reddit():
                     #couldn't handle for some reason
                 reddit.inbox.mark_read([item]) 
 
-#start_reddit()
+start_reddit()
