@@ -1,16 +1,13 @@
 import imageio
 import requests
-import time
 import json
 import praw
+import time
 from praw.models import Comment, Inbox, Redditor
-import os
-import sys
-import urllib2
 import urllib
 import images
 import numpy as np
-
+import links
 
 CONFIG = json.loads(open('gfycat.json').read())
 CLIENT_ID = CONFIG["client_id"]
@@ -21,7 +18,7 @@ PAYLOAD = {
     "client_secret": CLIENT_SECRET
   }
 
-CMNT_TEXT = "  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^I'm ^^in ^^my ^^alpha ^^stage; ^^help ^^me ^^out ^^and ^^report ^^bugs!"
+CMNT_TEXT = "  \n*****\n  ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^I'm ^^in ^^my ^^alpha ^^stage; ^^help ^^me ^^out ^^and ^^report ^^bugs!"
 
 #Sets up the access token for gfycat
 def get_access_token():
@@ -33,22 +30,21 @@ def get_access_token():
 HEADER = get_access_token()
 
 
-def changespeed(vid, mult):
+def changespeed(linkObj, mult):
     print "Changing speed"
-    
-    if vid.endswith('.gifv') or vid.endswith('.gif'):
-        vid = vid.replace('.gifv', '.gif') #make sure it's a gif
-        urllib.URLopener().retrieve(vid, 'input.gif')
+
+    if linkObj.filetype == "gif":
+        urllib.URLopener().retrieve(linkObj.link, 'input.gif')
 
         reader = imageio.get_reader('input.gif', 'gif')
         dur = (float(reader.get_meta_data()['duration']))
-        oldfps = 1 if dur == 0 else (1000.0/dur)
+        oldfps = 10 if dur == 0 else (1000.0/dur)
         print "old fps was " + (str(oldfps))
 
         frames = images.processImage('input.gif')
     
-    elif vid.endswith('.mp4'):
-        frames = list(imageio.get_reader(vid))
+    elif linkObj.filetype == 'mp4':
+        frames = list(imageio.get_reader(linkObj.link))
         oldfps = float(reader.get_meta_data()['fps'])
         
     writer = imageio.get_writer('output.mp4', fps=(oldfps*mult), quality=8.0)
@@ -89,23 +85,22 @@ def upload_to_gfycat():
     else:
         raise "failure"
 
+#Takes in a comment, posts a reply if valid, doesn't do anything if invalid.
 def handle_comment(cmnt):
     text = cmnt.body.lower()
-    link = cmnt.submission.url
+    sub = cmnt.submission.url
     if text == "good bot": #don't need to check parent, etc - will only be in inbox if it was a reply
         cmnt.reply("Thanks"+ CMNT_TEXT)
        
-    elif link.endswith('.gif') or link.endswith('.mp4') or link.endswith('.gifv') or "gfycat.com" in link:
+    else:
         print "Processing submission"
-        if "gfycat.com" in link:
-            gid = link.split('/')[-1]
-            link = "https://giant.gfycat.com/" + gid + '.mp4'
-        text = cmnt.body.lower()
         mult = float(text.split()[1])
-        changespeed(link, mult)
-        reply_url = upload_to_gfycat()
-        cmnt.reply("Here's the GIF at "+str(mult)+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n"+ CMNT_TEXT)
-        print "Comment should be up"
+        linkObj = links.sanitize(sub, cmnt)
+        if not (linkObj is None):
+            changespeed(linkObj, mult)
+            reply_url = upload_to_gfycat()
+            cmnt.reply("Here's the GIF at "+str(mult)+"x the original speed.\n  \n[MP4 link]("+reply_url+")\n"+ CMNT_TEXT)
+            print "Comment should be up"
     
 
 def start_reddit():
