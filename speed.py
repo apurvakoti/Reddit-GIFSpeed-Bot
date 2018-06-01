@@ -19,10 +19,9 @@ PAYLOAD = {
     "grant_type":"client_credentials",
     "client_id": CLIENT_ID,
     "client_secret": CLIENT_SECRET
-
   }
 
-CMNT_TEXT = "  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^[issues](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot/issues)"
+CMNT_TEXT = "  \n*****\n  ^^I'm ^^a ^^bot ^^| ^^Summon ^^with ^^\"/u/GIFSpeedBot ^^<speed>\" ^^| ^^[code](https://github.com/apurvakoti/Reddit-GIFSpeed-Bot) ^^| ^^I'm ^^in ^^my ^^alpha ^^stage; ^^help ^^me ^^out ^^and ^^report ^^bugs!"
 
 #Sets up the access token for gfycat
 def get_access_token():
@@ -43,7 +42,7 @@ def changespeed(vid, mult):
 
         reader = imageio.get_reader('input.gif', 'gif')
         dur = (float(reader.get_meta_data()['duration']))
-        oldfps = 100.0 / (10 if dur == 0 else dur)
+        oldfps = 1 if dur == 0 else (1000.0/dur)
         print "old fps was " + (str(oldfps))
 
         frames = images.processImage('input.gif')
@@ -119,8 +118,8 @@ def start_reddit():
             if isinstance(item, Comment):
                 try:
                     handle_comment(item)
-                except ValueError:
-                    print "value error"
+                except Exception as e:
+                    print e
                     #couldn't handle for some reason
                 reddit.inbox.mark_read([item]) 
 
